@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 
 // Dropdown Options
 const kvOptions = [
-  "5kv",
   "3kv",
+  "5kv",
+  "8kv",
+  "10kv",
   "1KvA",
   "500 Watt",
   "300 Watt",
@@ -11,13 +13,18 @@ const kvOptions = [
   "500 Watt Charger",
   "Inverter"
 ];
+
 const materialOptions = ["Aluminium", "Copper"];
+
 const allTypeOptions = {
   default: ["Manual", "Automatic"],
-  "5kv": ["FULLY", "Digital", "Local"],
-  "3kv": ["FULLY", "Digital", "Local"],
+  "3kv": ["Full Automatic", "Digital", "Local"],
+  "5kv": ["Full Automatic", "Digital", "Local"],
+  "8kv": ["Full Automatic", "Digital", "Local"],       // same as 3kv & 5kv
+  "10kv": ["Manual", "Automatic"],            // same as default
   "Inverter": ["Automatic"],
 };
+
 const actionOptions = ["Pieces Made", "Pieces Sold"];
 
 const API_URL = "https://shop-app-v7dc.onrender.com";
@@ -145,17 +152,6 @@ export default function App() {
         </select>
 
         <select
-          name="material"
-          value={formData.material}
-          onChange={handleChange}
-          className="border rounded p-2 w-36 sm:w-32 border-pure-greys-300"
-        >
-          {materialOptions.map((mat) => (
-            <option key={mat}>{mat}</option>
-          ))}
-        </select>
-
-        <select
           name="type"
           value={formData.type}
           onChange={handleChange}
@@ -166,6 +162,19 @@ export default function App() {
           ))}
         </select>
 
+
+        <select
+          name="material"
+          value={formData.material}
+          onChange={handleChange}
+          className="border rounded p-2 w-36 sm:w-32 border-pure-greys-300"
+        >
+          {materialOptions.map((mat) => (
+            <option key={mat}>{mat}</option>
+          ))}
+        </select>
+
+        
         <select
           name="action"
           value={formData.action}
@@ -207,8 +216,8 @@ export default function App() {
         <thead className="bg-pure-greys-100">
           <tr>
             <th className="border px-4 py-2">KV</th>
-            <th className="border px-4 py-2">Material</th>
             <th className="border px-4 py-2">Type</th>
+            <th className="border px-4 py-2">Material</th>
             <th className="border px-4 py-2">Total Quantity</th>
           </tr>
         </thead>
@@ -216,12 +225,13 @@ export default function App() {
           {summary.map((item, idx) => (
             <tr key={idx} className="text-center">
               <td className="border px-4 py-2">{item.kv}</td>
-              <td className="border px-4 py-2">{item.material}</td>
               <td className="border px-4 py-2">{item.type}</td>
+              <td className="border px-4 py-2">{item.material}</td>
               <td className="border px-4 py-2">{item.totalQuantity}</td>
             </tr>
           ))}
         </tbody>
+
       </table>
     </div>
   );
