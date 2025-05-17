@@ -20,7 +20,7 @@ const allTypeOptions = {
 };
 const actionOptions = ["Pieces Made", "Pieces Sold"];
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://shop-app-v7dc.onrender.com";
 
 export default function App() {
   const [summary, setSummary] = useState([]);
