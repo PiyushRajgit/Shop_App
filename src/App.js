@@ -18,12 +18,13 @@ const materialOptions = ["Aluminium", "Copper"];
 
 const allTypeOptions = {
   default: ["Manual", "Automatic"],
-  "3kv": ["Full Automatic", "Digital", "Local"],
-  "5kv": ["Full Automatic", "Digital", "Local"],
-  "8kv": ["Full Automatic", "Digital", "Local"],       // same as 3kv & 5kv
-  "10kv": ["Manual", "Automatic"],            // same as default
+  "3kv": ["Full Automatic", "Digital", "Local", "4 Relay", "Micro Relay"],
+  "5kv": ["Full Automatic", "Digital", "Local", "4 Relay", "Micro Relay"],
+  "8kv": ["Full Automatic", "Digital", "Local", "4 Relay", "Micro Relay"],
+  "10kv": ["Manual", "Automatic"],
   "Inverter": ["Automatic"],
 };
+
 
 const actionOptions = ["Pieces Made", "Pieces Sold"];
 
