@@ -1,34 +1,53 @@
 import React, { useState, useEffect } from "react";
 
-// Dropdown Options
 const kvOptions = [
-  "3kv",
-  "5kv",
-  "8kv",
   "10kv",
+  "8kv",
+  "5kv",
+  "3kv",
   "1KvA",
   "500 Watt",
   "300 Watt",
   "1 Kva Charger",
   "500 Watt Charger",
-  "Inverter"
+  "Inverter",
 ];
 
 const materialOptions = ["Aluminium", "Copper"];
 
 const allTypeOptions = {
   default: ["Manual", "Automatic"],
-  "3kv": ["Full Automatic", "Digital", "Local", "4 Relay Automatic", "4 Relay Manual", "Micro Relay"],
-  "5kv": ["Full Automatic", "Digital", "Local", "4 Relay Automatic", "4 Relay Manual", "Micro Relay"],
-  "8kv": ["Full Automatic", "Digital", "Local", "4 Relay Automatic", "4 Relay Manual", "Micro Relay"],
+  "3kv": [
+    "Full Automatic",
+    "Digital",
+    "Local",
+    "4 Rellay Manual",
+    "4 Rellay Automatic",
+    "Micro Rellay",
+  ],
+  "5kv": [
+    "Full Automatic",
+    "Digital",
+    "Local",
+    "4 Rellay Manual",
+    "4 Rellay Automatic",
+    "Micro Rellay",
+  ],
+  "8kv": [
+    "Full Automatic",
+    "Digital",
+    "Local",
+    "4 Rellay Manual",
+    "4 Rellay Automatic",
+    "Micro Rellay",
+  ],
   "10kv": ["Manual", "Automatic"],
-  "Inverter": ["Automatic"],
+  Inverter: ["Automatic"],
 };
-
 
 const actionOptions = ["Pieces Made", "Pieces Sold"];
 
-const API_URL = "https://shop-app-v7dc.onrender.com";
+const API_URL = "http://localhost:5000";
 
 export default function App() {
   const [summary, setSummary] = useState([]);
@@ -43,7 +62,6 @@ export default function App() {
 
   const getTypeOptions = (kv) => allTypeOptions[kv] || allTypeOptions.default;
 
-  // Fetch current summary from API
   const fetchSummary = async () => {
     try {
       const res = await fetch(`${API_URL}/summary`);
@@ -58,7 +76,6 @@ export default function App() {
     fetchSummary();
   }, []);
 
-  // Reset type if kv changes
   useEffect(() => {
     const updatedTypes = getTypeOptions(formData.kv);
     if (!updatedTypes.includes(formData.type)) {
@@ -80,20 +97,20 @@ export default function App() {
 
     const { kv, material, type, quantity, action } = formData;
 
-    // Find matching summary entry
     const matched = summary.find(
-      (item) => item.kv === kv && item.material === material && item.type === type
+      (item) =>
+        item.kv === kv && item.material === material && item.type === type
     );
     const currentStock = matched ? matched.totalQuantity : 0;
 
-    // Prevent overselling
     if (action === "Pieces Sold" && quantity > currentStock) {
       alert(`Cannot sell ${quantity} items. Only ${currentStock} in stock.`);
       setLoading(false);
       return;
     }
 
-    const adjustedQuantity = action === "Pieces Sold" ? -Math.abs(quantity) : quantity;
+    const adjustedQuantity =
+      action === "Pieces Sold" ? -Math.abs(quantity) : quantity;
     const payload = { ...formData, quantity: adjustedQuantity };
 
     try {
@@ -107,7 +124,6 @@ export default function App() {
       await res.json();
       await fetchSummary();
 
-      // Reset form
       setFormData({
         kv: kvOptions[0],
         material: materialOptions[0],
@@ -123,13 +139,18 @@ export default function App() {
     }
   };
 
-  // Current stock based on selection
-  const currentStock = summary.find(
-    (item) =>
-      item.kv === formData.kv &&
-      item.material === formData.material &&
-      item.type === formData.type
-  )?.totalQuantity || 0;
+  const currentStock =
+    summary.find(
+      (item) =>
+        item.kv === formData.kv &&
+        item.material === formData.material &&
+        item.type === formData.type
+    )?.totalQuantity || 0;
+
+  const parseKV = (kv) => {
+    const match = kv.toLowerCase().match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-4 font-inter">
@@ -163,7 +184,6 @@ export default function App() {
           ))}
         </select>
 
-
         <select
           name="material"
           value={formData.material}
@@ -175,7 +195,6 @@ export default function App() {
           ))}
         </select>
 
-        
         <select
           name="action"
           value={formData.action}
@@ -207,32 +226,67 @@ export default function App() {
         </button>
       </form>
 
-      {/* Current Stock Display */}
-      <p className="text-center text-sm mb-8 text-gray-600">
-        Current Stock: <span className="font-semibold">{currentStock}</span>
-      </p>
+      <div className="text-center mb-8">
+  <div className="text-gray-600 uppercase tracking-wider font-semibold mb-1">
+    Current Stock
+  </div>
+  <div className="text-caribbeangreen-700 font-extrabold text-5xl">
+    {currentStock}
+  </div>
+</div>
 
-      {/* Summary Table */}
+
+
       <table className="w-full table-auto border-collapse border border-pure-greys-200">
         <thead className="bg-pure-greys-100">
           <tr>
             <th className="border px-4 py-2">KV</th>
-            <th className="border px-4 py-2">Type</th>
             <th className="border px-4 py-2">Material</th>
+            <th className="border px-4 py-2">Type</th>
             <th className="border px-4 py-2">Total Quantity</th>
           </tr>
         </thead>
         <tbody>
-          {summary.map((item, idx) => (
-            <tr key={idx} className="text-center">
-              <td className="border px-4 py-2">{item.kv}</td>
-              <td className="border px-4 py-2">{item.type}</td>
-              <td className="border px-4 py-2">{item.material}</td>
-              <td className="border px-4 py-2">{item.totalQuantity}</td>
-            </tr>
-          ))}
-        </tbody>
+          {(() => {
+            const sorted = [...summary].sort((a, b) => {
+              const kvA = parseKV(a.kv);
+              const kvB = parseKV(b.kv);
+              if (kvA !== kvB) return kvB - kvA;
+              return a.totalQuantity - b.totalQuantity;
+            });
 
+            let currentKV = null;
+            const rows = [];
+
+            sorted.forEach((item, idx) => {
+              if (item.kv !== currentKV) {
+                currentKV = item.kv;
+                rows.push(
+                  <tr key={`group-${currentKV}`} className="bg-yellow-300 shadow-md border border-yellow-600">
+                    <td
+                      colSpan="4"
+                      className="text-left px-6 py-3 font-extrabold text-xl text-gray-900 tracking-wide uppercase"
+                    >
+                      🔶 {currentKV} Stabilizers
+                    </td>
+                  </tr>
+
+                );
+              }
+
+              rows.push(
+                <tr key={idx} className="text-center">
+                  <td className="border px-4 py-2 font-bold text-lg">{item.kv}</td>
+                  <td className="border px-4 py-2">{item.material}</td>
+                  <td className="border px-4 py-2">{item.type}</td>
+                  <td className="border px-4 py-2 font-bold text-lg">{item.totalQuantity}</td>
+                </tr>
+              );
+            });
+
+            return rows;
+          })()}
+        </tbody>
       </table>
     </div>
   );
