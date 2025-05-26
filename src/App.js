@@ -109,9 +109,15 @@ export default function App() {
       return;
     }
 
-    const adjustedQuantity =
-      action === "Pieces Sold" ? -Math.abs(quantity) : quantity;
-    const payload = { ...formData, quantity: adjustedQuantity };
+    const adjustedQuantity = action === "Pieces Sold" ? -Math.abs(quantity) : quantity;
+
+    // Send only required fields, no 'action'
+    const payload = {
+      kv,
+      material,
+      type,
+      quantity: adjustedQuantity,
+    };
 
     try {
       const res = await fetch(`${API_URL}/records`, {
@@ -119,7 +125,16 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Failed to update record");
+
+      if (!res.ok) {
+        let errorMsg = "Failed to update record";
+        try {
+          const errorData = await res.json();
+          errorMsg = errorData.message || errorMsg;
+        } catch {}
+
+        throw new Error(errorMsg);
+      }
 
       await res.json();
       await fetchSummary();
@@ -133,7 +148,7 @@ export default function App() {
       });
     } catch (err) {
       console.error("Error submitting form:", err);
-      alert("Error updating record");
+      alert(err.message || "Error updating record");
     } finally {
       setLoading(false);
     }
@@ -227,15 +242,11 @@ export default function App() {
       </form>
 
       <div className="text-center mb-8">
-  <div className="text-gray-600 uppercase tracking-wider font-semibold mb-1">
-    Current Stock
-  </div>
-  <div className="text-caribbeangreen-700 font-extrabold text-5xl">
-    {currentStock}
-  </div>
-</div>
-
-
+        <div className="text-gray-600 uppercase tracking-wider font-semibold mb-1">
+          Current Stock
+        </div>
+        <div className="text-caribbeangreen-700 font-extrabold text-5xl">{currentStock}</div>
+      </div>
 
       <table className="w-full table-auto border-collapse border border-pure-greys-200">
         <thead className="bg-pure-greys-100">
@@ -270,7 +281,6 @@ export default function App() {
                       🔶 {currentKV} Stabilizers
                     </td>
                   </tr>
-
                 );
               }
 
