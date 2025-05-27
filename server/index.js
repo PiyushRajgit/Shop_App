@@ -8,13 +8,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Use MONGO_URI from .env file
+// MongoDB connection
 const mongoURI = process.env.MONGO_URI;
-
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+// Mongoose schema
 const recordSchema = new mongoose.Schema({
   kv: String,
   type: String,
@@ -25,7 +25,7 @@ const recordSchema = new mongoose.Schema({
 
 const Record = mongoose.model("Record", recordSchema);
 
-// Root route (health check)
+// Root health check
 app.get("/", (req, res) => {
   res.send("Backend API is running");
 });
@@ -40,11 +40,17 @@ app.get("/records", async (req, res) => {
   }
 });
 
-// Post new record
+// Post a new record
 app.post("/records", async (req, res) => {
   const { kv, type, material, quantity } = req.body;
   try {
-    const newRecord = new Record({ kv, type, material, quantity });
+    const newRecord = new Record({
+      kv,
+      type,
+      material,
+      quantity,
+      timestamp: new Date(), // Local time
+    });
     await newRecord.save();
     res.json({ message: "Record added" });
   } catch (err) {
@@ -52,7 +58,7 @@ app.post("/records", async (req, res) => {
   }
 });
 
-// Get summary
+// Get total summary (all records)
 app.get("/summary", async (req, res) => {
   try {
     const summary = await Record.aggregate([
@@ -78,7 +84,7 @@ app.get("/summary", async (req, res) => {
   }
 });
 
-// Get sales records and summary for a specific date
+// ✅ Get sales records and summary for a specific date (in local time)
 app.get("/sales-by-date", async (req, res) => {
   const { date } = req.query;
 
@@ -86,23 +92,20 @@ app.get("/sales-by-date", async (req, res) => {
     return res.status(400).json({ error: "Date query parameter is required (YYYY-MM-DD)" });
   }
 
-const startDate = new Date(`${date}T00:00:00`);
-const endDate = new Date(`${date}T00:00:00`);
-endDate.setDate(endDate.getDate() + 1);
-
+  const userDate = new Date(`${date}T00:00:00+05:30`);
+  const nextDate = new Date(userDate);
+  nextDate.setDate(userDate.getDate() + 1);
 
   try {
-    // Fetch individual sales records with negative quantity on that date
     const salesRecords = await Record.find({
-      timestamp: { $gte: startDate, $lt: endDate },
+      timestamp: { $gte: userDate, $lt: nextDate },
       quantity: { $lt: 0 },
     }).sort({ timestamp: -1 });
 
-    // Aggregate total sales summary for that date
     const summary = await Record.aggregate([
       {
         $match: {
-          timestamp: { $gte: startDate, $lt: endDate },
+          timestamp: { $gte: userDate, $lt: nextDate },
           quantity: { $lt: 0 },
         },
       },
@@ -130,5 +133,7 @@ endDate.setDate(endDate.getDate() + 1);
   }
 });
 
+
+// Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

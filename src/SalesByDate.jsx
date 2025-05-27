@@ -17,18 +17,29 @@ export default function SalesByDate() {
   const [summary, setSummary] = useState([]);
 
   const fetchSales = async () => {
-    if (!date) return;
-    try {
-      const res = await axios.get(`${API_URL}/sales-by-date`, {
-        params: { date },
-      });
-      setRecords(res.data.records);
-      setSummary(res.data.summary);
-    } catch (error) {
-      alert("Failed to fetch sales data");
-      console.error(error);
-    }
-  };
+  if (!date) return;
+
+  // Convert selected date to yesterday's date for the API call
+  const selectedDate = new Date(date);
+  const dateForAPI = new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000); // minus 1 day
+
+  const yyyy = dateForAPI.getFullYear();
+  const mm = String(dateForAPI.getMonth() + 1).padStart(2, "0");
+  const dd = String(dateForAPI.getDate()).padStart(2, "0");
+  const formattedDate = `${yyyy}-${mm}-${dd}`;
+
+  try {
+    const res = await axios.get(`${API_URL}/sales-by-date`, {
+      params: { date: formattedDate },
+    });
+    setRecords(res.data.records);
+    setSummary(res.data.summary);
+  } catch (error) {
+    alert("Failed to fetch sales data");
+    console.error(error);
+  }
+};
+
 
   return (
     <div className="max-w-6xl mx-auto p-6 font-inter">
