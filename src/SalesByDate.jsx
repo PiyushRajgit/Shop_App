@@ -21,7 +21,7 @@ export default function SalesByDate() {
 
   // Convert selected date to yesterday's date for the API call
   const selectedDate = new Date(date);
-  const dateForAPI = new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000); // minus 1 day
+  const dateForAPI = new Date(selectedDate.getTime() ); // minus 1 day
 
   const yyyy = dateForAPI.getFullYear();
   const mm = String(dateForAPI.getMonth() + 1).padStart(2, "0");
